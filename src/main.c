@@ -3,6 +3,9 @@
 #include "trap.h"
 #include "mmu.h"
 #include "uart.h"
+#include "gic.h"
+
+#define TICKS 5     /* stop after this many timer interrupts */
 
 void drop_to_el1(void (*entry)(void));      /* el_drop.S */
 
@@ -91,6 +94,23 @@ static void el1_main(void)
     __asm__ volatile("ldr %0, [%1]" : "=r"(dummy) : "r"(0x100000000UL));
     printf("back after translation fault\n");
 
+    /* GICv3 and the timer. gic_el3_setup() already ran at EL3. */
+    printf("\n--- GICv3 and the generic timer ---\n");
+    gic_cpu_init();
+    gic_enable_intid(INTID_TIMER_PHYS);
+    timer_start(100);
+
+    /* Unmask IRQs: DAIFClr #2 clears PSTATE.I. (DAIF bits are D=8, A=4, I=2, F=1.) */
+    __asm__ volatile("msr daifclr, #2" ::: "memory");
+
+    /* Sleep until the handler has counted N ticks. WFI: wait for interrupt. */
+    while (timer_ticks() < TICKS)
+        __asm__ volatile("wfi");
+
+    timer_stop();
+    __asm__ volatile("msr daifset, #2" ::: "memory");
+    printf("done: %d ticks\n", TICKS);
+
     for (;;)
         __asm__ volatile("wfe");
 }
@@ -107,6 +127,8 @@ void main(void)
 
     printf("\n--- exception tests at EL3 ---\n");
     run_exception_tests(3);
+
+    gic_el3_setup();    /* distributor, ICC_SRE_EL3/EL2, CNTHCTL_EL2: needs EL3 */
 
     printf("\n--- dropping EL3 -> EL2 -> EL1 ---\n");
     drop_to_el1(el1_main);
