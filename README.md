@@ -10,6 +10,7 @@ walkthrough written for an engineer who knows RISC-V (RV32) and is learning Armv
 | Step | What | Walkthrough | State |
 |---|---|---|---|
 | 1 | Boot: linker script, `start.S`, PL011 UART, printf-lite, print `CurrentEL` | [01-boot](docs/walkthrough/01-boot.md) | branch `p1-boot` |
+| 2 | Exception vector tables, register save and restore, ESR decoding (at EL3) | [02-vectors](docs/walkthrough/02-vectors.md) | branch `p1-vectors` |
 
 ## Build and run
 
@@ -60,5 +61,8 @@ Inside RAM the image is: `.text`, `.rodata`, `.data`, `.bss`, then a 16 KB stack
 | [`src/start.S`](src/start.S) | entry: park cores 1-3, stack, zero BSS, call `main` |
 | [`src/uart.c`](src/uart.c) | PL011 polled transmit |
 | [`src/printf.c`](src/printf.c) | `printf` with `%s %c %d %x %%` |
-| [`src/main.c`](src/main.c) | prints `CurrentEL` |
+| [`src/vectors.S`](src/vectors.S) | the three vector tables (EL1, EL2, EL3), save and restore of the frame |
+| [`src/exception.c`](src/exception.c) | the C handler: decode ESR and print |
+| [`include/trap.h`](include/trap.h), [`include/sysreg.h`](include/sysreg.h) | the trap frame; system register access macros |
+| [`src/main.c`](src/main.c) | the tests |
 | [`docs/walkthrough/`](docs/walkthrough) | one walkthrough per step |

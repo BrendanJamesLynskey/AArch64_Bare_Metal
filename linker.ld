@@ -26,6 +26,11 @@ SECTIONS
         *(.text .text.*)
     }
 
+    /* Vector tables need 2 KB alignment; vectors.S aligns them itself. */
+    .text.vectors : {
+        *(.text.vectors)
+    }
+
     .rodata : { *(.rodata .rodata.*) }
     .data   : { *(.data .data.*) }
 
