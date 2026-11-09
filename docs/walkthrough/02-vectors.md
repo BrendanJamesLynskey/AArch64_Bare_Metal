@@ -113,6 +113,6 @@ everywhere.
 
 ## Break it
 
-In `exc_common_el\el` change `ldp x1, x2, [sp, #248]` / the `msr elr_el` write so `ELR` is not written back (delete
-the two `msr` lines). Predict: the undefined-instruction test no longer skips, so the same instruction faults
+In `exc_common_el\el` delete the `msr     elr_el\el, x1` line, so the saved `ELR` is not written back. Predict: the
+undefined-instruction test no longer skips, so the same instruction faults
 again, forever. Run it and see the same message repeat. Then put the lines back.

@@ -62,16 +62,18 @@ void exception_handler(struct trap_frame *f, unsigned long el)
     unsigned long iss = f->esr & 0x1ffffff;          /* class-specific detail */
 
     printf("\n*** exception at EL%d, entry %d: %s\n", (int)el, (int)f->vec, vec_name[f->vec]);
-    printf("    ESR=0x%lx EC=0x%lx (%s) IL=%d ISS=0x%lx\n", f->esr, ec, esr_class_name(ec), (int)il, iss);
+    printf("    ESR_EL%d=0x%lx EC=0x%lx (%s) IL=%d ISS=0x%lx\n", (int)el, f->esr, ec,
+           esr_class_name(ec), (int)il, iss);
 
     if (ec == 0x24 || ec == 0x25 || ec == 0x20 || ec == 0x21) {
-        printf("    %s%s, FAR=0x%lx\n", fault_status_name(iss & 0x3f),
-               (ec == 0x24 || ec == 0x25) ? ((iss & 0x40) ? " on a write" : " on a read") : "",
-               f->far);
+        printf("    %s%s\n", fault_status_name(iss & 0x3f),
+               (ec == 0x24 || ec == 0x25) ? ((iss & 0x40) ? " on a write" : " on a read") : "");
     }
     if (ec == 0x15 || ec == 0x16 || ec == 0x17 || ec == 0x3c)
         printf("    immediate = 0x%lx\n", iss & 0xffff);   /* svc/hvc/smc/brk #imm */
-    printf("    ELR=0x%lx SPSR=0x%lx\n", f->elr, f->spsr);
+    /* FAR is only meaningful for aborts and alignment faults; for the others
+     * it holds an unknown value. */
+    printf("    ELR_EL%d=0x%lx FAR_EL%d=0x%lx SPSR=0x%lx\n", (int)el, f->elr, (int)el, f->far, f->spsr);
 
     /* Only synchronous exceptions taken here are expected, and they come
      * from deliberate test instructions. Return to the instruction after
