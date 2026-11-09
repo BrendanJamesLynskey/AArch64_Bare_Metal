@@ -1,4 +1,5 @@
 /* The C side of exception handling: decode ESR and print it. */
+#include "gic.h"
 #include "printf.h"
 #include "sysreg.h"
 #include "trap.h"
@@ -57,6 +58,12 @@ static const char *fault_status_name(unsigned long fsc)
 
 void exception_handler(struct trap_frame *f, unsigned long el)
 {
+    /* IRQ entries are 1, 5, 9 and 13. Handled quietly: a tick is not an error. */
+    if ((f->vec & 3) == 1) {
+        irq_handler();
+        return;
+    }
+
     unsigned long ec  = (f->esr >> 26) & 0x3f;       /* exception class */
     unsigned long il  = (f->esr >> 25) & 1;          /* 1 = 32-bit instruction */
     unsigned long iss = f->esr & 0x1ffffff;          /* class-specific detail */

@@ -13,6 +13,7 @@ walkthrough written for an engineer who knows RISC-V (RV32) and is learning Armv
 | 2 | Exception vector tables, register save and restore, ESR decoding (at EL3) | [02-vectors](docs/walkthrough/02-vectors.md) | branch `p1-vectors` |
 | 3 | EL3 to EL2 to EL1; `svc`, undefined instruction and alignment fault at EL1 | [03-el-drop](docs/walkthrough/03-el-drop.md) | branch `p1-el-drop` |
 | 4 | Identity-mapped stage-1 tables (4 KB granule), MMU and caches on, UART at a second VA | [04-mmu](docs/walkthrough/04-mmu.md) | branch `p1-mmu` |
+| 5 | GICv3 (distributor, redistributor, `ICC_*`) and the EL1 physical timer interrupting every 100 ms | [05-gic-timer](docs/walkthrough/05-gic-timer.md) | branch `p1-gic-timer` |
 
 ## Build and run
 
@@ -68,5 +69,6 @@ Inside RAM the image is: `.text`, `.rodata`, `.data`, `.bss`, then a 16 KB stack
 | [`include/trap.h`](include/trap.h), [`include/sysreg.h`](include/sysreg.h) | the trap frame; system register access macros |
 | [`src/el_drop.S`](src/el_drop.S) | `drop_to_el1`: EL3 to EL2 to EL1 by `eret` |
 | [`src/mmu.c`](src/mmu.c) | the page tables and the MMU enable |
+| [`src/gic.c`](src/gic.c), [`src/timer.c`](src/timer.c) | GICv3 setup; generic timer and the IRQ handler |
 | [`src/main.c`](src/main.c) | the tests: exceptions at EL3 and EL1, the MMU proof |
 | [`docs/walkthrough/`](docs/walkthrough) | one walkthrough per step |
