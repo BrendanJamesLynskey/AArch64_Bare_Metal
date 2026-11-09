@@ -1,6 +1,8 @@
 #include "printf.h"
 #include "sysreg.h"
 #include "trap.h"
+#include "mmu.h"
+#include "uart.h"
 
 void drop_to_el1(void (*entry)(void));      /* el_drop.S */
 
@@ -58,6 +60,36 @@ static void el1_main(void)
     printf("\n--- now in EL1 ---\n");
     print_el();
     run_exception_tests(1);
+
+    printf("\n--- MMU ---\n");
+    printf("SCTLR_EL1 before = 0x%lx\n", read_sysreg(sctlr_el1));
+    mmu_init();
+    unsigned long sctlr = read_sysreg(sctlr_el1);
+    printf("SCTLR_EL1 after  = 0x%lx (M=%d C=%d I=%d)\n", sctlr, (int)(sctlr & 1),
+           (int)((sctlr >> 2) & 1), (int)((sctlr >> 12) & 1));
+
+    /* Ask the hardware to translate the alias VA, using the AT instruction
+     * (address translation, stage 1, EL1, read). The result is in PAR_EL1:
+     * bit 0 = 1 means the translation failed; otherwise bits [47:12] are the
+     * physical page address. */
+    __asm__ volatile("at s1e1r, %0" :: "r"(UART_ALIAS_VA));
+    isb();
+    unsigned long par = read_sysreg(par_el1);
+    printf("AT of VA 0x%lx: PAR_EL1 = 0x%lx -> PA 0x%lx\n", UART_ALIAS_VA, par, par & 0xfffffffff000UL);
+
+    /* The proof: print through a virtual address that only exists because
+     * of the page tables. With the MMU off, 0x80000000 is a physical address
+     * with nothing behind it. */
+    uart_set_base(UART_ALIAS_VA);
+    printf("hello through the second VA 0x%lx\n", UART_ALIAS_VA);
+    uart_set_base(0x09000000UL);
+    printf("and back through the identity mapping\n");
+
+    /* An address with no mapping: a translation fault. The handler skips the load. */
+    printf("\ntest: load from unmapped VA 0x100000000\n");
+    unsigned long dummy;
+    __asm__ volatile("ldr %0, [%1]" : "=r"(dummy) : "r"(0x100000000UL));
+    printf("back after translation fault\n");
 
     for (;;)
         __asm__ volatile("wfe");
