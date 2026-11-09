@@ -93,3 +93,7 @@ Inside RAM the image is: `.text`, `.rodata`, `.data`, `.bss`, then a 16 KB stack
 | [`.github/workflows/ci.yml`](.github/workflows/ci.yml) | install the cross-compiler and QEMU with apt, run the smoke test |
 | [`src/main.c`](src/main.c) | the tests: exceptions at EL3 and EL1, the MMU proof |
 | [`docs/walkthrough/`](docs/walkthrough) | one walkthrough per step |
+
+## Licence
+
+MIT: see [`LICENSE`](LICENSE).
