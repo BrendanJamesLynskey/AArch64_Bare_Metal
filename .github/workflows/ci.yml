@@ -17,7 +17,7 @@ jobs:
     name: Build and run under QEMU
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install the cross-compiler and QEMU
         run: |
@@ -37,7 +37,7 @@ jobs:
 
       - name: Upload the UART output
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: smoke-output
           path: build/smoke.out.txt
