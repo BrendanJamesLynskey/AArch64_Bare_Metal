@@ -7,7 +7,7 @@ walkthrough written for an engineer who knows RISC-V (RV32) and is learning Armv
 
 ## What it shows
 
-The whole path from reset to a periodic interrupt on Armv8-A, in about 800 lines of C and assembly:
+The whole path from reset to a periodic interrupt on Armv8-A, in about 1000 lines of C and assembly:
 
 - reset at EL3 on QEMU `virt`, parking the extra cores, stack, BSS, a polled PL011 UART and a small `printf`;
 - the 16-entry exception vector table, saving all registers, and decoding `ESR_ELx` (EC, IL, ISS);
