@@ -10,8 +10,17 @@
  */
 #include "uart.h"
 
-#define UARTDR (*(volatile unsigned int *)(UART0_BASE + 0x00))
-#define UARTFR (*(volatile unsigned int *)(UART0_BASE + 0x18))
+/* The base can change: after the MMU is on, the UART is also reachable at
+ * a second virtual address (see mmu.c). */
+static unsigned long uart_base = UART0_BASE;
+
+void uart_set_base(unsigned long va)
+{
+    uart_base = va;
+}
+
+#define UARTDR (*(volatile unsigned int *)(uart_base + 0x00))
+#define UARTFR (*(volatile unsigned int *)(uart_base + 0x18))
 #define UARTFR_TXFF (1u << 5)
 
 void uart_putc(char c)
