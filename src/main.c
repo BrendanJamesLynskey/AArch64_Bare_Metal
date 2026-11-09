@@ -7,6 +7,7 @@
 
 #define TICKS 5     /* stop after this many timer interrupts */
 
+void psci_system_off(void);                 /* psci.c */
 void drop_to_el1(void (*entry)(void));      /* el_drop.S */
 
 /* Read CurrentEL. The exception level is in bits [3:2]; bits [1:0] and the
@@ -111,8 +112,7 @@ static void el1_main(void)
     __asm__ volatile("msr daifset, #2" ::: "memory");
     printf("done: %d ticks\n", TICKS);
 
-    for (;;)
-        __asm__ volatile("wfe");
+    psci_system_off();
 }
 
 void main(void)

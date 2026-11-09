@@ -1,0 +1,43 @@
+# CI: build the bare-metal program with the Arm cross-compiler and run it headless
+# under QEMU: tests/smoke.sh checks the UART output of every step and that the
+# program powers the machine off by itself (PSCI SYSTEM_OFF).
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    name: Build and run under QEMU
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install the cross-compiler and QEMU
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu qemu-system-arm
+
+      - name: Versions
+        run: |
+          aarch64-linux-gnu-gcc --version | head -n 1
+          qemu-system-aarch64 --version | head -n 1
+
+      - name: Smoke test (-cpu cortex-a53)
+        run: tests/smoke.sh
+
+      - name: Smoke test (-cpu max)
+        run: CPU=max tests/smoke.sh
+
+      - name: Upload the UART output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-output
+          path: build/smoke.out.txt

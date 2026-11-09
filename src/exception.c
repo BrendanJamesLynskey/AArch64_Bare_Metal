@@ -4,6 +4,8 @@
 #include "sysreg.h"
 #include "trap.h"
 
+void psci_el3_handle(struct trap_frame *f);     /* psci.c */
+
 /* Names for the 16 vector entries, in table order. */
 static const char *const vec_name[16] = {
     "current EL, SP_EL0, Sync",  "current EL, SP_EL0, IRQ",
@@ -64,7 +66,14 @@ void exception_handler(struct trap_frame *f, unsigned long el)
         return;
     }
 
-    unsigned long ec  = (f->esr >> 26) & 0x3f;       /* exception class */
+    unsigned long ec  = (f->esr >> 26) & 0x3f;
+
+    /* An SMC that reaches EL3 is a firmware call (PSCI): serve it quietly. */
+    if (el == 3 && ec == 0x17) {
+        psci_el3_handle(f);
+        return;
+    }
+       /* exception class */
     unsigned long il  = (f->esr >> 25) & 1;          /* 1 = 32-bit instruction */
     unsigned long iss = f->esr & 0x1ffffff;          /* class-specific detail */
 
