@@ -11,6 +11,7 @@ walkthrough written for an engineer who knows RISC-V (RV32) and is learning Armv
 |---|---|---|---|
 | 1 | Boot: linker script, `start.S`, PL011 UART, printf-lite, print `CurrentEL` | [01-boot](docs/walkthrough/01-boot.md) | branch `p1-boot` |
 | 2 | Exception vector tables, register save and restore, ESR decoding (at EL3) | [02-vectors](docs/walkthrough/02-vectors.md) | branch `p1-vectors` |
+| 3 | EL3 to EL2 to EL1; `svc`, undefined instruction and alignment fault at EL1 | [03-el-drop](docs/walkthrough/03-el-drop.md) | branch `p1-el-drop` |
 
 ## Build and run
 
@@ -64,5 +65,6 @@ Inside RAM the image is: `.text`, `.rodata`, `.data`, `.bss`, then a 16 KB stack
 | [`src/vectors.S`](src/vectors.S) | the three vector tables (EL1, EL2, EL3), save and restore of the frame |
 | [`src/exception.c`](src/exception.c) | the C handler: decode ESR and print |
 | [`include/trap.h`](include/trap.h), [`include/sysreg.h`](include/sysreg.h) | the trap frame; system register access macros |
-| [`src/main.c`](src/main.c) | the tests |
+| [`src/el_drop.S`](src/el_drop.S) | `drop_to_el1`: EL3 to EL2 to EL1 by `eret` |
+| [`src/main.c`](src/main.c) | the tests, at EL3 and then EL1 |
 | [`docs/walkthrough/`](docs/walkthrough) | one walkthrough per step |
